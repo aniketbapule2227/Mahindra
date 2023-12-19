@@ -1,0 +1,109 @@
+package com.example.mahindra.controller;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.mahindra.entity.Lead;
+import com.example.mahindra.exception.LeadAlreadyExistsException;
+import com.example.mahindra.service.LeadService;
+
+@RestController
+public class LeadController {
+	
+	
+    @Autowired
+    private LeadService leadService;
+
+
+    @PostMapping("/leads")
+    public ResponseEntity<Object> createLead(@RequestBody Lead lead) {
+        try {
+            Lead createdLead = leadService.createLead(lead);
+            return ResponseEntity.ok().body("Created Lead Successfully");
+        } catch (LeadAlreadyExistsException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+
+            Map<String, Object> nestedMap = new HashMap<>();
+            nestedMap.put("code", "E10010");
+            nestedMap.put("messages", Arrays.asList(e.getMessage()));
+
+            errorResponse.put("error response", nestedMap);
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+
+   
+        @GetMapping("/{mobileNumber}")
+        public ResponseEntity<Object> getLeadByMobileNumber(@PathVariable String mobileNumber) {
+            List<Lead> leads = leadService.getLeadsByMobileNumber(mobileNumber);
+
+            if (leads.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createErrorResponse("E10011",
+                        "No Lead found with the Mobile Number " + mobileNumber));
+            }
+
+            return ResponseEntity.ok(createSuccessResponse(leads));
+        }
+
+        private Map<String, Object> createSuccessResponse(List<Lead> leads) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("data", leads);
+            return response;
+        }
+
+        private Map<String, Object> createErrorResponse(String code, String message) {
+            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("code", code);
+            errorResponse.put("messages", Collections.singletonList(message));
+            response.put("status", "error");
+            response.put("errorResponse", errorResponse);
+            return response;
+        }
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+

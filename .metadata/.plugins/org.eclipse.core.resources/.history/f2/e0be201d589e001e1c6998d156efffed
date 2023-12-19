@@ -1,0 +1,5 @@
+package com.example.mahindra.exception;
+
+public class LeadAlreadyExistsException {
+
+}
